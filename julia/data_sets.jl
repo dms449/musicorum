@@ -1,7 +1,7 @@
 using WAV
   
-guitar_file = "/home/dms449/workspace/JuliaProjects/MusicalFxExtraction/test/HazySunshine.wav"
-piano_file = "/home/dms449/workspace/JuliaProjects/MusicalFxExtraction/test/pianocello.wav"
+guitar_file = "/home/dms449/workspace/JuliaProjects/MusicalFxExtraction/wav_samples/HazySunshine.wav"
+piano_file = "/home/dms449/workspace/JuliaProjects/MusicalFxExtraction/wav_samples/pianocello.wav"
 
 """
 get a 
