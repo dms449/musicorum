@@ -8,9 +8,9 @@ version = "0.4.1"
 
 [[ArrayInterface]]
 deps = ["LinearAlgebra", "Requires", "SparseArrays"]
-git-tree-sha1 = "954b48dedb37ce8211209533380352c28e023fc4"
+git-tree-sha1 = "068344754ed9bd4e80d24c1281a9c280a594d597"
 uuid = "4fba245c-0d91-5ea0-9b3e-6abc04ee57a9"
-version = "2.1.0"
+version = "2.3.0"
 
 [[AssetRegistry]]
 deps = ["Distributed", "JSON", "Pidfile", "SHA", "Test"]
@@ -39,11 +39,23 @@ git-tree-sha1 = "cbce79ce8bfa1a576bb0a166ce75e7b92a575098"
 uuid = "ad839575-38b3-5650-b840-f874b8c74a25"
 version = "0.12.0"
 
+[[CSV]]
+deps = ["CategoricalArrays", "DataFrames", "Dates", "FilePathsBase", "Mmap", "Parsers", "PooledArrays", "Tables", "Unicode", "WeakRefStrings"]
+git-tree-sha1 = "a4ff17bfcb4b6a5001712e33f2372d534ec47a4f"
+uuid = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
+version = "0.5.21"
+
 [[Calculus]]
 deps = ["LinearAlgebra"]
 git-tree-sha1 = "f641eb0a4f00c343bbc32346e1217b86f3ce9dad"
 uuid = "49dc2e85-a5d0-5ad3-a950-438e2897f1b9"
 version = "0.5.1"
+
+[[CategoricalArrays]]
+deps = ["Compat", "DataAPI", "Future", "JSON", "Missings", "Printf", "Reexport", "Statistics", "Unicode"]
+git-tree-sha1 = "9127b0c2ee1bfd810921dd688dd8d73be1d9fb57"
+uuid = "324d7699-5711-5eae-9e2f-1d82baa6b597"
+version = "0.7.5"
 
 [[ColorTypes]]
 deps = ["FixedPointNumbers", "Random"]
@@ -91,6 +103,12 @@ version = "0.6.0"
 git-tree-sha1 = "674b67f344687a88310213ddfa8a2b3c76cc4252"
 uuid = "9a962f9c-6df0-11e9-0e5d-c546b8b5ee8a"
 version = "1.1.0"
+
+[[DataFrames]]
+deps = ["CategoricalArrays", "Compat", "DataAPI", "Future", "InvertedIndices", "IteratorInterfaceExtensions", "Missings", "PooledArrays", "Printf", "REPL", "Reexport", "SortingAlgorithms", "Statistics", "TableTraits", "Tables", "Unicode"]
+git-tree-sha1 = "00136fcd39d503e66ab1b2eab800c47deaf7ca04"
+uuid = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
+version = "0.20.0"
 
 [[DataStructures]]
 deps = ["InteractiveUtils", "OrderedCollections"]
@@ -157,6 +175,12 @@ git-tree-sha1 = "80c17c711c41416eb0ac68347dc036be68b37682"
 uuid = "5789e2e9-d7fb-5bc7-8068-2c6fae9b9549"
 version = "1.2.0"
 
+[[FilePathsBase]]
+deps = ["Dates", "LinearAlgebra", "Printf", "Test", "UUIDs"]
+git-tree-sha1 = "2cd6e2e7965934f72cb80251f760228e2264bab3"
+uuid = "48062228-2e41-5def-b9a4-89aafe57970f"
+version = "0.7.0"
+
 [[FileWatching]]
 uuid = "7b1f6079-737a-58dc-b8bc-7a2ca5c1b5ee"
 
@@ -182,6 +206,10 @@ deps = ["Test"]
 git-tree-sha1 = "04cb9cfaa6ba5311973994fe3496ddec19b6292a"
 uuid = "de31a74c-ac4f-5751-b3fd-e18cd04993ca"
 version = "0.5.0"
+
+[[Future]]
+deps = ["Random"]
+uuid = "9fa8497b-333b-5362-9e8d-4d0656e87820"
 
 [[GR]]
 deps = ["Base64", "DelimitedFiles", "LinearAlgebra", "Pkg", "Printf", "Random", "Serialization", "Sockets", "Test"]
@@ -222,6 +250,12 @@ version = "0.5.0"
 [[InteractiveUtils]]
 deps = ["Markdown"]
 uuid = "b77e0a4c-d291-57a0-90e8-8db25a27a240"
+
+[[InvertedIndices]]
+deps = ["Test"]
+git-tree-sha1 = "15732c475062348b0165684ffe28e85ea8396afc"
+uuid = "41ab1584-1d38-5bbf-9106-f11c6c58b48f"
+version = "1.0.0"
 
 [[IterTools]]
 git-tree-sha1 = "05110a2ab1fc5f932622ffea2a003221f4782c18"
@@ -417,6 +451,12 @@ git-tree-sha1 = "ae71c2329790af97b7682b11241b3609e4d48626"
 uuid = "f27b6e38-b328-58d1-80ce-0feddd5e7a45"
 version = "0.6.0"
 
+[[PooledArrays]]
+deps = ["DataAPI"]
+git-tree-sha1 = "b1333d4eced1826e15adbdf01a4ecaccca9d353c"
+uuid = "2dfb63ee-cc39-5dd5-95bd-886bf059d720"
+version = "0.5.3"
+
 [[PositiveFactorizations]]
 deps = ["LinearAlgebra", "Test"]
 git-tree-sha1 = "127c47b91990c101ee3752291c4f45640eeb03d1"
@@ -548,6 +588,12 @@ deps = ["Base64", "FileIO", "Libdl", "Logging"]
 git-tree-sha1 = "dfbbce73a5458898752a26ec945ef8f0b93e1dcf"
 uuid = "8149f6b0-98f6-5db9-b78f-408fbbb8ef88"
 version = "1.0.3"
+
+[[WeakRefStrings]]
+deps = ["DataAPI", "Random", "Test"]
+git-tree-sha1 = "28807f85197eaad3cbd2330386fac1dcb9e7e11d"
+uuid = "ea10d353-3f73-51f8-a26c-33c1cb351aa5"
+version = "0.6.2"
 
 [[WebIO]]
 deps = ["AssetRegistry", "Base64", "Distributed", "FunctionalCollections", "JSON", "Logging", "Observables", "Pkg", "Random", "Requires", "Sockets", "UUIDs", "WebSockets", "Widgets"]

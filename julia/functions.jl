@@ -75,7 +75,7 @@ splits the array of data into as many sub-arrays of length 'wlen' shifted by
 Depending on the requested wlen and wshift, there may be samples
 at the end of 'data' which are never used.
 """
-function windowize(data::Array{Float64,1}, wlen::Int, wshift::Int)
+function windowize(data::Array{Float64,1}, wlen::Int, wshift::Int=1)
   if (wlen > length(data))
     print("window size is larger than the input data")
     return 
@@ -83,9 +83,9 @@ function windowize(data::Array{Float64,1}, wlen::Int, wshift::Int)
 
   num_win = Int(floor((length(data)-wlen)/wshift) + 1)
   
-  ret = Array{Float64}(undef, num_win, wlen)
-  for i in 1:num_win
-    ind1 = 1+(i-1)*wshift
+  ret = Array{Float64}(undef, num_win, wlen) 
+  for i in 1:num_win 
+    ind1 = 1+(i-1)*wshift 
     ret[i,:] = data[ind1:ind1+wlen-1]
   end
   return ret
