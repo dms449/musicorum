@@ -1,6 +1,12 @@
 [deps]
+BSON = "fbb218c0-5317-5bc6-957e-2ee96dd4b1f0"
+CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
 DSP = "717857b8-e6f2-59f4-9121-6e50c889abd2"
+DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
 FFTW = "7a1cc6ca-52ef-59f5-83cd-3a7055c09341"
 Flux = "587475ba-b771-5e3f-ad9e-33799f191a9c"
+JSON = "682c06a0-de6a-54ab-a142-c8b1cf79cde6"
 Knet = "1902f260-5fb4-5aff-8c31-6271790ab950"
+MP3 = "cd409658-5b1a-491f-921a-81bcdb86ea62"
+Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 WAV = "8149f6b0-98f6-5db9-b78f-408fbbb8ef88"

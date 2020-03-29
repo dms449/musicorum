@@ -7,14 +7,14 @@ using DSP
 sec_to_process = 3
 
 function get_freqs(win_len, fs)
-  freqs = fftshift(fftfreq(win_len, fs))
+  freqs = fftshift(FFTW.fftfreq(win_len, fs))
   ind = (Int64(win_len/2)+1):length(freqs)
   return freqs[ind]
 end
 
 function get_fft(data, fs)
   F = fftshift(fft(data))
-  freqs = fftshift(fftfreq(size(data)[1], fs))
+  freqs = fftshift(FFTW.fftfreq(size(data)[1], fs))
   return freqs, F
 end
 
@@ -33,8 +33,8 @@ function freq_res_to_win_size(freq_res, sample_freq=44100)
 end
 
 
-function stft(data, wlen, wshift, fs=44100)
-  num_win = Int(floor((length(data)-wlen)/wshift) + 1)
+function stft(data, wlen, stride, fs=44100)
+  num_win = Int(floor((length(data)-wlen)/stride) + 1)
   x = Array{Float64}(undef, num_win)
   y = Array{Float64}(undef, Int(wlen/2))
   z = Array{Float64}(undef, Int(wlen/2), num_win)
@@ -51,7 +51,7 @@ function stft(data, wlen, wshift, fs=44100)
     # create the array of time values
     x[i] = i
 
-    ind1 = 1+(i-1)*wshift
+    ind1 = 1+(i-1)*stride
     d = data[ind1:ind1+wlen-1]
     fft_x,fft_y = fft_extra(Wb.*d, fs)
     #print("fft_x=$(size(fft_x)) : fft_y$(size(fft_y)) ")
@@ -70,25 +70,29 @@ end
 
 """
 splits the array of data into as many sub-arrays of length 'wlen' shifted by 
-'wshift'. 
+'stride'. 
 
-Depending on the requested wlen and wshift, there may be samples
+Depending on the requested wlen and stride, there may be samples
 at the end of 'data' which are never used.
 """
-function windowize(data::Array{Float64,1}, wlen::Int, wshift::Int=1)
+function windowize(data::Array{Float64,1}, wlen::Int, stride::Int=1)
   if (wlen > length(data))
     print("window size is larger than the input data")
     return 
   end
 
-  num_win = Int(floor((length(data)-wlen)/wshift) + 1)
+  num_win = Int(floor((length(data)-wlen)/stride) + 1)
   
   ret = Array{Float64}(undef, num_win, wlen) 
   for i in 1:num_win 
-    ind1 = 1+(i-1)*wshift 
+    ind1 = 1+(i-1)*stride 
     ret[i,:] = data[ind1:ind1+wlen-1]
   end
   return ret
+end
+
+function conv_size(input, kernel, stride, pad)
+  return (input - kernel+2*pad)/stride + 1
 end
 
 
