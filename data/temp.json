@@ -1,0 +1,78 @@
+{
+"Sungha Jung/Perfect Blue/01 Hazy Sunshine.mp3":{
+  "tempo":-1,"timing":-1,"sections":[
+    {"start":"00:00","stop":"end","labels":["acoustic_guitar","picking"]}
+  ]
+},
+
+"Sean Watkins/Let It Fall/01 Neo's Song.mp3":{
+  "tempo":-1,"timing":-1,"sections":[
+    {"start":"00:00","stop":"end","labels":["acoustic_guitar","picking", "violin"]}
+  ]
+},
+"Sean Watkins/Let It Fall/02 Let It Fall.mp3":{
+  "tempo":-1,"timing":-1,"sections":[
+    {"start":"00:00","stop":"00:07","labels":["acoustic_guitar","picking"]},
+    {"start":"00:07","stop":"00:15","labels":["acoustic_guitar","steel_string_lap_guitar"]},
+    {"start":"00:15","stop":"00:32","labels":["acoustic_guitar","picking"]},
+    {"start":"00:32","stop":"00:32","labels":["acoustic_guitar","vocal","picking"]}
+  ]
+},
+"Sean Watkins/Let It Fall/03 January Second.mp3":{
+  "tempo":-1,"timing":-1,"sections":[
+    {"start":"00:00","stop":"end","labels":["acoustic_guitar","picking", "violin"]}
+  ]
+},
+"Sean Watkins/Let It Fall/04 Ferdinand the Bull.mp3":{
+  "tempo":-1,"timing":-1,"sections":[
+    {"start":"00:00","stop":"end","labels":["acoustic_guitar","picking", "violin"]}
+  ]
+},
+"Sean Watkins/Let It Fall/05 Cloudbreak.mp3":{
+  "tempo":-1,"timing":-1,"sections":[
+    {"start":"00:00","stop":"end","labels":["acoustic_guitar","picking", "violin"]}
+  ]
+},
+
+"The Piano Guys/00 More Than Words.mp3":{
+  "tempo":-1,"timing":-1,"sections":[
+    {"start":"00:00","stop":"00:10","labels":["piano"]},
+    {"start":"00:10","stop":"02:15","labels":["piano", "cello"]},
+    {"start":"02:17","stop":"02:31","labels":["piano"]},
+    {"start":"02:31","stop":"03:51","labels":["piano", "cello"]}
+  ]
+},
+"The Piano Guys/Where Are You Christmas - Sing/Where Are You Christmas.mp3":{
+  "tempo":-1,"timing":-1,"sections":[
+    {"start":"00:00","stop":"00:35","labels":["piano"]},
+    {"start":"00:35","stop":"02:19","labels":["piano", "cello"]},
+    {"start":"02:19","stop":"02:31","labels":["piano"]},
+    {"start":"02:31","stop":"02:51","labels":["piano", "vocal"]},
+    {"start":"02:51","stop":"03:11","labels":["piano", "cello","vocal"]},
+    {"start":"03:11","stop":"03:21","labels":["piano", "vocal"]},
+    {"start":"03:21","stop":"03:31","labels":["piano"]}
+  ]
+},
+"The Piano Guys/Can't Help Falling in Love - S/01 Can't Help Falling in Love.mp3":{
+  "tempo":-1,"timing":-1,"sections":[
+    {"start":"00:00","stop":"04:07","labels":["piano"]}
+  ]
+},
+"The Piano Guys/All of Me - SIgnle/01 All of Me.mp3":{
+  "tempo":-1,"timing":-1,"sections":[
+    {"start":"00:00","stop":"03:00","labels":["piano"]}
+  ]
+},
+
+
+"Tracy Chapman/Tracy Chapman/02 Fast Car.mp3":{
+  "tempo":-1,"timing":-1,"sections":[
+    {"start":"00:00","stop":"00:21","labels":["guitar", "drums"]},
+    {"start":"00:21","stop":"00:39","labels":["guitar", "drums", "vocals"]},
+    {"start":"00:39","stop":"00:49","labels":["guitar", "drums"]},
+    {"start":"00:49","stop":"01:07","labels":["guitar", "drums", "vocals"]},
+    {"start":"01:07","stop":"01:16","labels":["guitar", "drums"]}
+  ]
+}
+
+}

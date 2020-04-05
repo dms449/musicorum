@@ -34,13 +34,14 @@ end
 
 
 function stft(data, wlen, stride, fs=44100)
+  #@info "size=$(size(data)) type=$(typeof(data))"
   num_win = Int(floor((length(data)-wlen)/stride) + 1)
-  x = Array{Float64}(undef, num_win)
-  y = Array{Float64}(undef, Int(wlen/2))
-  z = Array{Float64}(undef, Int(wlen/2), num_win)
+  x = Array{Float32}(undef, num_win)
+  y = Array{Float32}(undef, Int(wlen/2))
+  z = Array{Float32}(undef, Int(wlen/2), num_win)
   #print("num_win=$(num_win) : z size=$(size(z))\n")
 
-  Wb = Array{Float64}(undef, wlen)
+  Wb = Array{Float32}(undef, wlen)
   ## Hamming Window Generation
   for n in 1:wlen
     Wb[n] = 0.54-0.46cos(2pi*(n-1)wlen)
@@ -66,6 +67,13 @@ function stft(data, wlen, stride, fs=44100)
   return x,y,z
 
 end  
+
+"""
+partition the collection *data* with window of size *wlen* and shifted by *stride*
+"""
+function partition(x, wlen::Int, stride::Int=1)
+  return ((@view x[i:i+wlen-1]) for i in 1:stride:length(x)-wlen+1)
+end
 
 
 """

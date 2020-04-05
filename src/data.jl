@@ -1,22 +1,168 @@
-using WAV
-using MP3
-using Libdl
+using JSON
+using Base.Iterators: Stateful, take
+using Dates
+using Random: shuffle!
+using Flux: onehot, onecold, onehotbatch
+import MP3
+import WAV
 include("functions.jl")
 
-strings = ["guitar", "mandolin", "banjo", "violine"]
-brass = ["trumpet"]
-woodwind = ["flute" ]
-percussion = ["drums"]
+# TODO: fix hard coded base path
+# TODO: currently assuming all songs are sampled at 44100Hz
+# TODO: 
+
+string_instruments = ["acoustic_guitar", "electric_guitar", "acoustic_bass", "electric_bass", "mandolin", "banjo", "violin", "cello"]
+string_playing_styles = ["strumming", "picking"]
+brass_instruments = ["trumpet"]
+woodwind_instruments = ["flute", "whistle"]
+percussion_instruments = ["drums"]
 keyboard = ["piano"]
+other_instruments = ["vocals"]
+instruments = vcat(string_instruments, brass_instruments, woodwind_instruments, percussion_instruments, keyboard, other_instruments)
 
-basic_families = ["percussion"=>percussion, "wood wind"=>woodwind, "brass"=>brass, "strings"=>strings, "keyboard"=>keyboard]
-hornbostel-sachs = ["Idiophone"]
+basic_families = ["percussion_instruments"=>percussion_instruments, "woodwind_instruments"=>woodwind_instruments, "brass_instruments"=>brass_instruments, "string_instruments"=>string_instruments, "keyboard"=>keyboard, "other_instruments"=>other_instruments]
+#hornbostel_sachs = ["Idiophone"]
 
-  
-guitar_file = "/home/dms449/workspace/JuliaProjects/MusicalFxExtraction/wav_samples/HazySunshine.wav"
-piano_file = "/home/dms449/workspace/JuliaProjects/MusicalFxExtraction/wav_samples/pianocello.wav"
+#instruments = ["guitar", "vocals", "piano", "cello"]
+global data_path_root = "/home/dms449/Music"
+global fs = 44100
 
-instruments = ["guitar", "vocals", "piano", "cello"]
+function data_files()
+  return JSON.parse(read("data/train.json", String)), JSON.parse(read("data/test.json", String))
+end
+function data_keys(train::Dict, test::Dict, shuffle_keys::Bool=true)
+  train_keys = shuffle_keys ? Stateful(shuffle(collect(keys(train)))) : Stateful(collect(keys(train)))
+  test_keys = shuffle_keys ? Stateful(shuffle(collect(keys(test)))) : Stateful(collect(keys(test)))
+  return train_keys, test_keys
+end
+function all_data()
+  train_f, test_f = data_files()
+  train_k, test_k = data_keys(train_f, test_f)
+  return train_f, train_k, test_f, test_k
+end
+
+
+"""
+Get some data
+
+**NOTE: This function is STATEFUL.** 
+Calling it multiple times will likely result in different data each time.
+
+To reset the state, call 
+```
+reset_data()
+```
+
+"""
+function get_data(truth_file, shuffled_keys, num_files, partition_size::Int=2*fs, partition_stride::Int=2*fs)
+  #global shuffled_files;
+  data = []
+  labels = []
+
+  # set up the iterator if it is null
+  # This is a shuffled array of the keys of the Dict 'truth_file'
+  #if isempty(shuffled_files) shuffled_files = Stateful(shuffle!(collect(keys(truth_file)))) end
+
+  # load each song
+  for key in take(shuffled_keys, num_files)
+    @debug "loading $(split(key, "/")[end])"
+    song = nothing
+    if endswith(key, "mp3")
+      song = MP3.load(joinpath(data_path_root, key))
+    elseif endswith(key, "wav")
+      song, _1, _2, _3 = WAV.wavread(joinpath(data_path_root, key))
+    else
+      @warn "$(split(key, "/")[end]) is not of valid format=(.mp3 | .wav). skipping file."
+      continue
+    end
+    # convert to 1d array of type Float32
+    song = convert(Array{Float32,1}, song[:,1])
+
+    # parse the song into its respective components
+    for s in truth_file[key]["sections"]
+      slice = song_slice(song, s["start"], s["stop"]) 
+      l = build_truth_vector(s["labels"])
+      temp = collect(partition(slice[:,1], partition_size, partition_stride))
+      data = [data; get_spectograms(temp)]
+      labels = [labels ; fill(l, (size(temp)[1], 1))]
+    end
+  end
+  return shuffle!(collect(zip(data, labels)))
+end
+
+function get_training_samples(num_files)
+end
+
+"""
+
+"""
+function build_truth_vector(input)
+  return sum(collect(onehotbatch(input, instruments)),dims=2)
+end
+"""
+may not be necessary?
+"""
+#function load_file(file, partition_size=Int(2*44100), stride=Int(2*44100))
+#    @debug "loading $(split(file, "/")[end])"
+#    song = nothing
+#    if endswith(key, "mp3")
+#      song = MP3.load(file)
+#    elseif endswith(key, "wav")
+#      song, _1, _2, _3 = WAV.wavread(file)
+#    else
+#      @warn "$(split(file, "/")[end]) is not of valid format=(.mp3 | .wav). skipping file."
+#      continue
+#    end
+#
+#    # parse the song into its respective components
+#    for s in truth_file[key]["sections"]
+#      @debug "$(s["start"])"
+#      d = song_slice(song, Time(s["start"], "MM:SS"), Time(s["stop"],"MM:SS")) #TODO: handle 'end'
+#      l = s["labels"]
+#      temp = partition(d[:,1], Int(2*fs), Int(2*fs))
+#      data = [data; get_spectograms(temp)]
+#      labels = [labels ; fill(l, (size(temp)[1], 1))]
+#    end
+#
+#end
+
+"""
+TODO: currently assumes the Time objects are even seconds
+"""
+function song_slice(song, start::Time, stop::Time, fs=44100)
+  t1 = Int(fs*Dates.value(start)/1e9)+1
+  t2 = Int(fs*Dates.value(stop)/1e9)
+  if t2>length(song) 
+    @warn "stop time $stop was greater than song length."
+    t2=length(song)
+  end
+  return length(size(song))==1 ? song[t1:t2] : song[t1:t2,:]
+end
+
+"""
+TODO: currently assumes the Time objects are even seconds
+"""
+function song_slice(song, start::String, stop::String, fs=44100)
+  t1 = Time(start, "MM:SS")
+  t2 = stop=="end" ? Time(0, floor(size(song,1)/fs/60), floor(size(song,1)/fs % 60)) : Time(stop, "MM:SS") 
+  return song_slice(song, t1, t2, fs)
+end
+
+
+
+function get_spectograms(data)
+  temp = [stft(data[i],2750, 1375)[end] for i in 1:size(data,1)]
+  return map(x-> reshape(x, size(x)...,1,1), temp)
+end
+
+
+
+
+
+
+
+
+
 
 
 """
@@ -78,46 +224,3 @@ function load_dir()
 end
 
 
-function load_mp3(filename::String ="""/home/dms449/Music/Sungha Jung/Perfect Blue/01 Hazy Sunshine.mp3""")
-
-  struct mpg123_handle{} end
-
-  err::Int32 = 0;
-
-  #try
-    handle = dlopen("libmpg123.so.0")
-    mpg_open = dlsym(handle, "mpg123_open")
-    mpg_read = dlsym(handle, "mpg123_read")
-    mpg_init = dlsym(handle, "mpg123_init")
-    mpg_new = dlsym(handle, "mpg123_new")
-    mpg_err = dlsym(handle, "mpg123_plain_strerror")
-
-    #try
-
-    data_out_size_max::Csize_t = 0xffffffff
-    data_out_size_actual::Csize_t = 0
-    data_out = Array{UInt8,1}(undef,data_out_size_max)
-
-    @info "initializing"
-    err = ccall(mpg_init, Int32, ())
-
-    @info "getting handle"
-    mpg_handle = ccall(mpg_new, Ptr{mpg123_handle}, (Ref{UInt8}, Ref{Int32}), C_NULL, err);
-
-    @info "opening file $filename"
-    err = ccall(mpg_open, Int32, (Ptr{mpg123_handle}, Cstring), mpg_handle, filename)
-
-    @info "reading file"
-    err = ccall(mpg_read, Int32, (Ptr{mpg123_handle}, Ref{UInt8}, Csize_t, Ref{Csize_t}), mpg_handle, data_out, data_out_size_max, data_out_size_actual)
-
-    # TODO look into mpg123 format for bug fix?
-    if (err != 0)
-      err_str = ccall(mpg_err, Cstring, (Int32,), err)
-      @error "$(unsafe_string(err_str))"
-      return 
-    end
-
-    @info "data_out_size_actual: $data_out_size_actual"
-    return data_out[1:data_out_size_actual]
-
-end

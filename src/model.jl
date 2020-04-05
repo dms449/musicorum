@@ -1,51 +1,59 @@
 using Flux
 using Flux:  mse, throttle, softmax, @epochs
+using BSON: @save, @load
 using Random
 
 include("data.jl")
 include("functions.jl")
 
 # data, labels = load_dir()
-function get_spectograms(data)
-  temp = [stft(data[i,:],2750, 1375)[end] for i in 1:size(data)[1]]
-  return map(x-> reshape(x, size(x)...,1,1), temp)
-end
 
 
 #samples = [stft(data[i,:],2750, 1375)[end] for i in 1:size(data)[1]]
-function train_test(x, l)
-  all = gpu.(shuffle!(collect(zip(x, l))))
-  #test = gpu.(zip(x[end-3:end], l[end-3:end]))
-  return all[1:end-2], all[end-1:end]
-end
+#function train_test(x, l)
+#  all = gpu.(shuffle!(collect(zip(x, l))))
+#  #test = gpu.(zip(x[end-3:end], l[end-3:end]))
+#  return all[1:end-2], all[end-1:end]
+#end
+#
+#function get_data()
+#  data, labels = load_dir()
+#  temp = get_spectograms(data)
+#  return train_test(temp, labels)
+#end
+#
+#function training(train, test)
+#  @epochs 1 Flux.train!(loss, params(c), train, opt, cb = throttle(evalcb, 5))
+#end
 
-function get_data()
-  data, labels = load_dir()
-  temp = get_spectograms(data)
-  return train_test(temp, labels)
-end
+"""
 
-function training(train, test)
-  @epochs 1 Flux.train!(loss, params(c), train, opt, cb = throttle(evalcb, 5))
-end
+"""
+function train(; epochs::Int=5)
+  # load the truth files
+  train_files,train_keys, test_files, test_keys = all_data()
+  test_samples = get_data(test_files, test_keys, 1, Int(2*44100), Int(2*44100))
 
-function run()
-  data, labels = load_dir()
-  temp = get_spectograms(data)
-
-  train, test = train_test(temp, labels)
-
-  loss(x, y) = mse(c(x), y)
-  evalcb = () -> @show loss(test[end][1], test[end][2])
+  loss(x, y) = mse(instrument_model(x), y)
+  evalcb = () -> @show loss(test_samples[end][1], test_samples[end][2])
   opt = ADAM()
+  
+  for i in 1:epochs
+    @info "epoch $i"
+    training_samples = get_data(train_files, train_keys, 5, Int(2*44100), Int(2*44100))
+    while !isempty(training_samples)
+      Flux.train!(loss, params(instrument_model), training_samples, opt, cb = throttle(evalcb, 1))
 
-  @epochs 1 Flux.train!(loss, params(c), train, opt, cb = throttle(evalcb, 5))
-
+      training_samples = get_data(train_files, train_keys, 5, Int(2*44100), Int(2*44100))
+    end
+    
+    train_keys, test_keys = data_keys(train_files, test_files)
+  end
 end
 
 
 
-c = Chain(
+instrument_model = Chain(
     Conv((3,3), 1=>1, pad = 1),
     MaxPool((2,2)),
 
@@ -60,7 +68,7 @@ c = Chain(
 
     x->reshape(x, :, size(x, 4)),
 
-    Dense(896,length(instruments))
+    Dense(1197,length(instruments))
     #softmax
    )
 
