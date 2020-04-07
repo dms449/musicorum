@@ -1,7 +1,8 @@
 using JSON
 using Base.Iterators: Stateful, take
+using Base.Threads: @spawn
 using Dates
-using Random: shuffle!
+using Random: shuffle!, shuffle
 using Flux: onehot, onecold, onehotbatch
 import MP3
 import WAV
@@ -43,15 +44,7 @@ end
 
 
 """
-Get some data
-
-**NOTE: This function is STATEFUL.** 
-Calling it multiple times will likely result in different data each time.
-
-To reset the state, call 
-```
-reset_data()
-```
+Get 'num_files' from truth_file by pulling from the Stateful iterator, 'shuffled_keys'.
 
 """
 function get_data(truth_file, shuffled_keys, num_files, partition_size::Int=2*fs, partition_stride::Int=2*fs)
@@ -59,38 +52,40 @@ function get_data(truth_file, shuffled_keys, num_files, partition_size::Int=2*fs
   data = []
   labels = []
 
-  # set up the iterator if it is null
-  # This is a shuffled array of the keys of the Dict 'truth_file'
-  #if isempty(shuffled_files) shuffled_files = Stateful(shuffle!(collect(keys(truth_file)))) end
-
   # load each song
-  for key in take(shuffled_keys, num_files)
+  futures = Array{Task,1}(undef,num_files)
+  for (i, key) in enumerate(take(shuffled_keys, num_files))
     @debug "loading $(split(key, "/")[end])"
-    song = nothing
-    if endswith(key, "mp3")
-      song = MP3.load(joinpath(data_path_root, key))
-    elseif endswith(key, "wav")
-      song, _1, _2, _3 = WAV.wavread(joinpath(data_path_root, key))
-    else
-      @warn "$(split(key, "/")[end]) is not of valid format=(.mp3 | .wav). skipping file."
-      continue
-    end
-    # convert to 1d array of type Float32
-    song = convert(Array{Float32,1}, song[:,1])
-
-    # parse the song into its respective components
-    for s in truth_file[key]["sections"]
-      slice = song_slice(song, s["start"], s["stop"]) 
-      l = build_truth_vector(s["labels"])
-      temp = collect(partition(slice[:,1], partition_size, partition_stride))
-      data = [data; get_spectograms(temp)]
-      labels = [labels ; fill(l, (size(temp)[1], 1))]
-    end
+    futures[i] = @spawn load_file!(key, truth_file[key]["sections"], data, labels, partition_size, partition_stride)
   end
+  map(wait, futures)
   return shuffle!(collect(zip(data, labels)))
 end
 
-function get_training_samples(num_files)
+"""
+"""
+function load_file!(filename::String, sections, output_data, output_labels, partition_size::Int=2*fs, partition_stride::Int=2*fs)
+  song = nothing
+
+  if endswith(filename, "mp3")
+    song = MP3.load(joinpath(data_path_root, filename))
+  elseif endswith(filename, "wav")
+    song, _1, _2, _3 = WAV.wavread(joinpath(data_path_root, filename))
+  else
+    @warn "$(split(filename, "/")[end]) is not of valid format=(.mp3 | .wav). skipping file."
+    return
+  end
+  # convert to 1d array of type Float32
+  song = convert(Array{Float32,1}, song[:,1])
+
+  # parse the song into its respective components
+  for s in sections
+    slice = song_slice(song, s["start"], s["stop"]) 
+    l = build_truth_vector(s["labels"])
+    temp = collect(partition(slice[:,1], partition_size, partition_stride))
+    append!(output_data, get_spectograms(temp))
+    append!(output_labels, fill(l, (size(temp)[1], 1)))
+  end
 end
 
 """
@@ -99,32 +94,6 @@ end
 function build_truth_vector(input)
   return sum(collect(onehotbatch(input, instruments)),dims=2)
 end
-"""
-may not be necessary?
-"""
-#function load_file(file, partition_size=Int(2*44100), stride=Int(2*44100))
-#    @debug "loading $(split(file, "/")[end])"
-#    song = nothing
-#    if endswith(key, "mp3")
-#      song = MP3.load(file)
-#    elseif endswith(key, "wav")
-#      song, _1, _2, _3 = WAV.wavread(file)
-#    else
-#      @warn "$(split(file, "/")[end]) is not of valid format=(.mp3 | .wav). skipping file."
-#      continue
-#    end
-#
-#    # parse the song into its respective components
-#    for s in truth_file[key]["sections"]
-#      @debug "$(s["start"])"
-#      d = song_slice(song, Time(s["start"], "MM:SS"), Time(s["stop"],"MM:SS")) #TODO: handle 'end'
-#      l = s["labels"]
-#      temp = partition(d[:,1], Int(2*fs), Int(2*fs))
-#      data = [data; get_spectograms(temp)]
-#      labels = [labels ; fill(l, (size(temp)[1], 1))]
-#    end
-#
-#end
 
 """
 TODO: currently assumes the Time objects are even seconds
@@ -182,45 +151,4 @@ returns a slice of the data based upon the desired number of seconds and offset
 function get_seconds(data, sec, fs=44100, offset=0)
   return data[(1+offset):Int64(offset + sec*fs)]
 end
-
-function load_file(filename::String)
-  data = Array{Float64}(undef, 0, Int(2*44100))
-  labels = [] 
-
-  if (endswith(filename, ".mp3"))
-    
-
-  elseif (endswith(filename, ".wav"))
-    samples, fs, nbits, opt = wavread("/home/dms449/Music/Training"*"/"*dir*"/"*each)
-    temp = windowize(samples[:,1], Int(2*fs), Int(2*fs))
-    data = [data; temp]
-    labels = [labels ; fill(label, (size(temp)[1], 1))]
-
-  else
-    @info "file with invalid extension: $filename"
-  end
-
-end
-
-function load_dir()
-  data = Array{Float64}(undef, 0, Int(2*44100))
-  labels = [] 
-
-  for dir in readdir("/home/dms449/Music/Training")
-    label_names = split(dir, "_")
-    f(t) = (t in label_names) ? 1.0 : 0.0
-    label = [f(l) for l in instruments]
-
-    for each in readdir("/home/dms449/Music/Training"*"/"*dir)
-      println("loading "*each)
-      samples, fs, nbits, opt = wavread("/home/dms449/Music/Training"*"/"*dir*"/"*each)
-      temp = windowize(samples[:,1], Int(2*fs), Int(2*fs))
-      data = [data; temp]
-      labels = [labels ; fill(label, (size(temp)[1], 1))]
-    end
-  end
-
-  return data, labels 
-end
-
 
