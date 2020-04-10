@@ -118,7 +118,6 @@ function song_slice(song, start::String, stop::String, fs=44100)
 end
 
 
-
 function get_spectograms(data)
   temp = [stft(data[i],2750, 1375)[end] for i in 1:size(data,1)]
   return map(x-> reshape(x, size(x)...,1,1), temp)
