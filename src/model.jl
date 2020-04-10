@@ -7,20 +7,20 @@ include("data.jl")
 include("functions.jl")
 
 
-instrument_model2 = Chain(
-    Conv((3, 3), 1=>16, pad=(1,1), relu),
+im2 = Chain(
+    Conv((3, 3), 1=>8, pad=(1,1), relu),
     MaxPool((2,2)),
 
-    Conv((3, 3), 16=>32, pad=(1,1), relu),
+    Conv((3, 3), 8=>16, pad=(1,1), relu),
     MaxPool((2,2)),
 
-    Conv((3, 3), 32=>32, pad=(1,1), relu),
+    Conv((3, 3), 16=>16, pad=(1,1), relu),
     MaxPool((2,2)),
 
-    x->reshape(x, :, size(x, 4)),
+    #x->reshape(x, :, size(x, 4)),
    )
 
-instrument_model3 = Chain(
+im3 = Chain(
     Conv((3, 3), 1=>8, pad=(1,1), relu),
     MaxPool((2,3)),
 
@@ -30,12 +30,15 @@ instrument_model3 = Chain(
     Conv((3, 3), 16=>16, pad=(1,1), relu),
     MaxPool((2,3)),
 
-    x->reshape(x, :, size(x, 4)),
+    #Conv((3, 3), 16=>16, pad=(1,1), relu),
+    #MaxPool((2,3)),
 
-    Dense(5472, length(instruments))
+    #x->reshape(x, :, size(x, 4))
+
+    #Dense(5472, length(instruments))
    )
 
-instrument_model4 = Chain(
+im4 = Chain(
     Conv((3, 3), 1=>16, pad=(1,1), relu),
     MaxPool((2,3)),
 
@@ -49,7 +52,7 @@ instrument_model4 = Chain(
    )
 
 
-instrument_model = Chain(
+im0 = Chain(
     Conv((3,3), 1=>1, pad = 1),
     MaxPool((2,2)),
 
@@ -71,7 +74,7 @@ instrument_model = Chain(
 
 """ 
 """
-function train(model=instrument_model; epochs::Int=5)
+function train(model=im0; epochs::Int=5)
   # load the truth files
   train_files,train_keys, test_files, test_keys = all_data()
   test_samples = get_data(test_files, test_keys, 1, Int(2*44100), Int(2*44100))
