@@ -33,6 +33,13 @@ function freq_res_to_win_size(freq_res, sample_freq=44100)
 end
 
 
+"""
+Take the short time forier transform of the vector data
+
+###Example
+```
+```
+"""
 function stft(data, wlen, stride, fs=44100)
   #@info "size=$(size(data)) type=$(typeof(data))"
   num_win = Int(floor((length(data)-wlen)/stride) + 1)
@@ -67,6 +74,12 @@ function stft(data, wlen, stride, fs=44100)
   return x,y,z
 
 end  
+
+"""
+get the output dimensions of a short-time-forier transform on an input vector 
+of length `dlen` with window length `wlen` and stride of `stride`
+"""
+get_stft_size(d_len, wlen, stride) = div(wlen,2), div(d_len-wlen, stride)+1
 
 """
 partition the collection *data* with window of size *wlen* and shifted by *stride*

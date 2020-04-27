@@ -42,3 +42,18 @@ function process(data, model, step=2*fs)
   end
   return answers
 end
+
+function plot_instruments_samples()
+  data_file = dataset("data/single_instrument.json")
+
+  plots = []
+  for (k, v) in data_file
+    data, labels = ([], [])
+    load_song!(k, v["sections"], data, labels)
+    
+  end
+    
+
+    
+
+end

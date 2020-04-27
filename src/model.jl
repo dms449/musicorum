@@ -4,7 +4,7 @@ using BSON: @save, @load
 using Random
 
 include("data.jl")
-include("functions.jl")
+include("utils.jl")
 
 
 im2 = Chain(
@@ -39,16 +39,24 @@ im3 = Chain(
    )
 
 im4 = Chain(
-    Conv((3, 3), 1=>16, pad=(1,1), relu),
-    MaxPool((2,3)),
+    Conv((3, 7), 1=>16, pad=(1,1), relu),
+    MaxPool((2,2)),
 
-    Conv((3, 3), 16=>32, pad=(1,1), relu),
-    MaxPool((2,3)),
+    Conv((3, 5), 16=>32, pad=(1,1), relu),
+    MaxPool((2,2)),
 
     Conv((3, 3), 32=>32, pad=(1,1), relu),
-    MaxPool((2,3)),
+    MaxPool((2,2)),
+
+    Conv((3, 3), 32=>32, pad=(1,1), relu),
+    MaxPool((2,2)),
+
+    Conv((3, 3), 32=>32, pad=(1,1), relu),
+    MaxPool((2,2)),
 
     x->reshape(x, :, size(x, 4)),
+    
+    Dense(1344, length(instruments))
    )
 
 
@@ -74,10 +82,11 @@ im0 = Chain(
 
 """ 
 """
-function train(model=im0; epochs::Int=5)
-  # load the truth files
-  train_files,train_keys, test_files, test_keys = all_data()
-  test_samples = get_data(test_files, test_keys, 1, Int(2*44100), Int(2*44100))
+function train!(model=im0, train_dataset=dataset("data/train.json"), test_dataset=dataset("data/test.json"); epochs::Int=5)
+  train_keys = dataset_keys(train_dataset)
+  test_keys = dataset_keys(test_dataset)
+  
+  test_samples = get_data(test_dataset, test_keys, 1, Int(2*44100), Int(2*44100))
 
   loss(x, y) = mse(model(x), y)
   evalcb = () -> @show loss(test_samples[end][1], test_samples[end][2])
@@ -85,14 +94,15 @@ function train(model=im0; epochs::Int=5)
   
   for i in 1:epochs
     @info "epoch $i"
-    training_samples = get_data(train_files, train_keys, 5, Int(2*44100), Int(2*44100))
+    training_samples = get_data(train_dataset, train_keys, 5, Int(2*44100), Int(2*44100))
     while !isempty(training_samples)
       Flux.train!(loss, params(model), training_samples, opt, cb = throttle(evalcb, 1))
 
-      training_samples = get_data(train_files, train_keys, 5, Int(2*44100), Int(2*44100))
+      training_samples = get_data(train_dataset, train_keys, 5, Int(2*44100), Int(2*44100))
     end
     
-    train_keys, test_keys = data_keys(train_files, test_files)
+    train_keys = dataset_keys(train_dataset)
+    test_keys = dataset_keys(test_dataset)
   end
 end
 #loss(x, y) = mse(c(x), y)

@@ -1,0 +1,24 @@
+{
+"The Piano Guys/Can't Help Falling in Love - S/01 Can't Help Falling in Love.mp3":{
+  "tempo":-1,"timing":-1,"sections":[
+    {"start":"00:00","stop":"04:07","labels":["piano"]}
+  ]
+},
+"Sungha Jung/Perfect Blue/13 Twist In My Sobriety.mp3":{
+  "tempo":-1,"timing":-1,"sections":[
+    {"start":"00:00","stop":"end","labels":["acoustic_guitar"]}
+  ]
+},
+"Nickel Creek/Nickel Creek/01 Ode To a Butterfly.mp3":{
+  "tempo":-1,"timing":-1,"sections":[
+    {"start":"00:00","stop":"00:21","labels":["banjo"]},
+    {"start":"00:23","stop":"00:30","labels":["mandolin"]}
+  ]
+},
+"The Piano Guys/The Piano Guys/11 The Cello Song.mp3":{
+  "tempo":-1,"timing":-1,"sections":[
+    {"start":"00:00","stop":"00:11","labels":["cello"]}
+  ]
+}
+
+}

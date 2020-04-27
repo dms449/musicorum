@@ -99,6 +99,16 @@
     {"start":"01:00","stop":"01:23","labels":["piano", "vocals"]}
 
   ]
+},
+"Nickel Creek/Nickel Creek/01 Ode To a Butterfly.mp3":{
+  "tempo":-1,"timing":-1,"sections":[
+    {"start":"00:00","stop":"00:21","labels":["banjo"]},
+    {"start":"00:23","stop":"00:30:","labels":["mandolin"]},
+    {"start":"00:30","stop":"00:39:","labels":["mandolin", "violin"]},
+    {"start":"00:39","stop":"01:05:","labels":["mandolin", "violin", "acoustic_guitar"]},
+    {"start":"00:39","stop":"00:39:","labels":["mandolin", "violin", "acoustic_guitar"]},
+    {"start":"01:06","stop":"01:22:","labels":["acoustic_guitar"]}
+  ]
 }
 
 

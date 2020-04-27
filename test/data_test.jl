@@ -1,16 +1,16 @@
 
 @testset "song_slice" begin
-  song = 1:4*44100 # 4 seconds at the common sampling frequency of 44.1 khz
+  song = 1:4*44100 #4 seconds at the common sampling frequency of 44.1 khz
 
   @testset "string times" begin
     slice1 = song_slice(song, "00:01", "00:02")
-    @test slice == 44101:88200
+    @test slice1 == 44101:88200
     slice2 = song_slice(song, "00:00", "00:02")
-    @test slice == 1:88200
+    @test slice2 == 1:88200
 
     # test different sampling frequency
-    slice1 = song_slice(song, "00:01", "00:02", fs=22050)
-    @test slice == 22051:44100
+    slice3 = song_slice(song, "00:01", "00:02", fs=22050)
+    @test slice3 == 22051:44100
   end
 
 end
