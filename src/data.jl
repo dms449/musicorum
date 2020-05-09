@@ -6,6 +6,7 @@ using Random: shuffle!, shuffle
 using Flux: onehot, onecold, onehotbatch
 import MP3
 import WAV
+using DSP: Periodograms.stft, Periodograms.spectrogram
 include("utils.jl")
 
 # TODO: fix hard coded base path
@@ -30,61 +31,80 @@ global data_path_root = "/home/dms449/Music"
 global all_training = "data/train.json"
 global fs = 44100
 
-abstract type DatasetFilterTypeBase end
-abstract type None <: DatasetFilterTypeBase end
-abstract type Inclusive <: DatasetFilterTypeBase end
-abstract type Exclusive <: DatasetFilterTypeBase end
 
 """
-obtain a dataset from a json file
+dataset(filepath::String ; subset=[], filter_type::Symbol=:include)
 
-optional filtering to only include or exclude certain instruments
+Open a json dataset file. 
+
+Optionally filter to include or exclude certain instruments using the keyword
+arguments 'subset' to defined the instruments and the 'filter_type' to specify
+whether to only include datasets with instruemnts in subset or whether to 
+exclude the instruments in subsets.
+
+filter_type ∈  [:include, :exclude]
 """
-function dataset(filepath::String ; subset, filter::Type{<:DatasetFilterTypeBase})
+function dataset(filepath::String ; subset=[], filter_type::Symbol=:include)
   dataset = JSON.parse(read(filepath, String))
-  if (filter_type == Inclusive)
-    return filter(p-> isempty(filter(s->isempty(s["labels"] ∩ subset), last(p)["sections"])), dataset)
-  elseif (filter_type == Exclusive)
-    return filter(p-> isempty(filter(s->!isempty(s["labels"] ∩ subset), last(p)["sections"])), dataset)
-  #elseif (filter_type == match)
-    #return filter(p-> isempty(filter(s->!isempty(s["labels"] == subset), last(p)["sections"])), dataset)
-  else
-    return dataset
+  if (!isempty(subset))
+    if (filter_type == :include)
+      return filter(p-> isempty(filter(s->isempty(s["labels"] ∩ subset), last(p)["sections"])), dataset)
+    elseif (filter_type == :exclude)
+      return filter(p-> isempty(filter(s->!isempty(s["labels"] ∩ subset), last(p)["sections"])), dataset)
+    #elseif (filter_type == :match)
+      #return filter(p-> isempty(filter(s->!isempty(s["labels"] == subset), last(p)["sections"])), dataset)
+    else
+      @warn "unrecognized filter_type symbol = $filter_type. Valid symbols = [:include, :exclude]."
+    end
   end
+  return dataset
 end
 
 function dataset_keys(dataset::Dict, shuffle_keys::Bool=true)
-  return shuffle_keys ? Stateful(shuffle(collect(keys(train)))) : Stateful(collect(keys(train)))
+  return shuffle_keys ? Stateful(shuffle(collect(keys(dataset)))) : Stateful(collect(keys(dataset)))
 end
 
 
 """
+get_data(truth_file, shuffled_keys, num_files, partition_size::Int=2*fs, partition_stride::Int=2*fs, stft_size=1376, stft_stride=div(stft_size,2))
+
 Get 'num_files' from truth_file by pulling from the Stateful iterator, 'shuffled_keys'.
 
 """
-function get_data(truth_file, shuffled_keys, num_files, partition_size::Int=2*fs, partition_stride::Int=2*fs)
+function get_data(truth_file, shuffled_keys, num_files, partition_size::Int=2*fs, partition_stride::Int=2*fs, stft_size=1376, stft_stride=div(stft_size,2))
   #global shuffled_files;
   data = []
   labels = []
 
   # load each song
-  futures = Array{Task,1}(undef,num_files)
+  futures = Vector{Task}(undef, num_files > length(shuffled_keys) ? length(shuffled_keys) : num_files)
   for (i, key) in enumerate(take(shuffled_keys, num_files))
     @debug "loading $(split(key, "/")[end])"
-    futures[i] = @spawn load_file!(key, truth_file[key]["sections"], data, labels, partition_size, partition_stride)
+    futures[i] = @spawn load_sections(key, truth_file[key]["sections"], partition_size, partition_stride, stft_size, stft_stride)
   end
-  map(wait, futures)
-  return shuffle(collect(zip(data, labels)))
+
+  # fetch the values from the futures and append them
+  for f in futures
+    (d,l) = fetch(f)
+    append!(data, d)
+    append!(labels, l)
+  end
+
+  # separate phase and magnitude into separate channels
+  data = map(x->cat(abs2.(x), angle.(x), dims=4), data)
+  
+  return (shuffle ∘ collect ∘ zip)(data, labels)
 end
 
 """
+
 """
-function load_song!(filename::String, sections, output_data, output_labels, partition_size::Int=2*fs, partition_stride::Int=2*fs)
+function load_sections(filename::String, sections, partition_size::Int=2*fs, partition_stride::Int=2*fs, stft_size=1376, stft_stride=div(stft_size,2))
   song = nothing
 
   if endswith(filename, "mp3")
     song = MP3.load(joinpath(data_path_root, filename))
-  elseif endswith(filename, "wav")
+  elseif endswith(filename, "wav") 
     song, _1, _2, _3 = WAV.wavread(joinpath(data_path_root, filename))
   else
     @warn "$(split(filename, "/")[end]) is not of valid format=(.mp3 | .wav). skipping file."
@@ -98,8 +118,7 @@ function load_song!(filename::String, sections, output_data, output_labels, part
     slice = song_slice(song, s["start"], s["stop"]) 
     l = build_truth_vector(s["labels"])
     temp = collect(partition(slice[:,1], partition_size, partition_stride))
-    append!(output_data, get_spectograms(temp, 2750, 1375))
-    append!(output_labels, fill(l, (size(temp)[1], 1)))
+    return stft.(temp, stft_size, stft_stride, fs=fs), fill(l, (size(temp)[1], 1))
   end
 end
 
@@ -108,7 +127,7 @@ end
 """
 load a 
 """
-function load_song(filename::String, partition_size=2*fs, partition_stride=2*fs)
+function load_song(filename::String, partition_size=2*fs, partition_stride=2*fs,  stft_size=1376, stft_stride=div(stft_size,2))
   song = nothing
   if endswith(filename, "mp3")
     song = MP3.load(joinpath(data_path_root, filename))
@@ -119,7 +138,7 @@ function load_song(filename::String, partition_size=2*fs, partition_stride=2*fs)
     return
   end
 
-  return get_spectograms(collect(partition(song[:,1], partition_size, partition_slide)), 2750, 1375)
+  return stft.(collect(partition(song[:,1], partition_size, partition_stride)), stft_size, stft_stride, fs=fs)
 end
 
 """
@@ -148,7 +167,7 @@ TODO: currently assumes the Time objects are even seconds
 function song_slice(song, start::String, stop::String; fs=44100)
   t1 = Time(start, "MM:SS")
   t2 = stop=="end" ? Time(0, floor(size(song,1)/fs/60), floor(size(song,1)/fs % 60)) : Time(stop, "MM:SS") 
-  return song_slice(song, t1, t2, fs)
+  return song_slice(song, t1, t2, fs=fs)
 end
 
 

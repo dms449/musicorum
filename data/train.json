@@ -1,12 +1,4 @@
 {
-"The Piano Guys/00 More Than Words.mp3":{
-  "tempo":-1,"timing":-1,"sections":[
-    {"start":"00:00","stop":"00:10","labels":["piano"]},
-    {"start":"00:10","stop":"02:15","labels":["piano", "cello"]},
-    {"start":"02:17","stop":"02:31","labels":["piano"]},
-    {"start":"02:31","stop":"03:51","labels":["piano", "cello"]}
-  ]
-},
 "The Piano Guys/Where Are You Christmas - Sing/01 Where Are You Christmas.mp3":{
   "tempo":-1,"timing":-1,"sections":[
     {"start":"00:00","stop":"00:35","labels":["piano"]},
@@ -18,30 +10,6 @@
     {"start":"03:21","stop":"03:31","labels":["piano"]}
   ]
 },
-"The Piano Guys/Can't Help Falling in Love - S/01 Can't Help Falling in Love.mp3":{
-  "tempo":-1,"timing":-1,"sections":[
-    {"start":"00:00","stop":"04:07","labels":["piano"]}
-  ]
-},
-"The Piano Guys/All of Me - Single/01 All of Me.mp3":{
-  "tempo":-1,"timing":-1,"sections":[
-    {"start":"00:00","stop":"03:00","labels":["piano"]}
-  ]
-},
-"The Piano Guys/The Piano Guys/07 Arwen's Vigil.mp3":{
-  "tempo":-1,"timing":-1,"sections":[
-    {"start":"00:00","stop":"00:27","labels":["piano", "cello"]},
-    {"start":"00:27","stop":"00:41","labels":["piano"]},
-    {"start":"00:41","stop":"01:13","labels":["piano", "cello"]},
-    {"start":"01:13","stop":"01:18","labels":["piano"]},
-    {"start":"01:18","stop":"01:54","labels":["piano", "cello"]},
-    {"start":"01:54","stop":"02:35","labels":["piano", "cello", "drums"]},
-    {"start":"02:35","stop":"02:50","labels":["piano", "cello"]},
-    {"start":"02:50","stop":"01:54","labels":["piano", "cello"]},
-    {"start":"03:28","stop":"3:45","labels":["piano", "cello"]}
-  ]
-},
-
 "Tracy Chapman/Tracy Chapman/02 Fast Car.mp3":{
   "tempo":-1,"timing":-1,"sections":[
     {"start":"00:00","stop":"00:21","labels":["acoustic_guitar", "drums"]},
@@ -56,39 +24,21 @@
     {"start":"00:00","stop":"end","labels":["acoustic_guitar"]}
   ]
 },
-"Sungha Jung/Perfect Blue/02 Billie Jean.mp3":{
+"Nickel Creek/Nickel Creek/01 Ode To a Butterfly.mp3":{
   "tempo":-1,"timing":-1,"sections":[
-    {"start":"00:00","stop":"end","labels":["acoustic_guitar"]}
+    {"start":"00:00","stop":"00:21","labels":["banjo"]},
+    {"start":"00:23","stop":"00:30","labels":["mandolin"]},
+    {"start":"00:30","stop":"00:39","labels":["mandolin", "violin"]},
+    {"start":"00:39","stop":"01:05","labels":["mandolin", "violin", "acoustic_guitar"]},
+    {"start":"00:39","stop":"00:39","labels":["mandolin", "violin", "acoustic_guitar"]},
+    {"start":"01:06","stop":"01:22","labels":["acoustic_guitar"]}
   ]
 },
-"Sungha Jung/Perfect Blue/03 One of Us.mp3":{
+"Mat Kearney/City Of Black & White/01 All I Have.mp3":{
   "tempo":-1,"timing":-1,"sections":[
-    {"start":"00:00","stop":"end","labels":["acoustic_guitar"]}
-  ]
-},
-"Sungha Jung/Perfect Blue/04 California Dreaming.mp3":{
-  "tempo":-1,"timing":-1,"sections":[
-    {"start":"00:00","stop":"end","labels":["acoustic_guitar"]}
-  ]
-},
-"Sungha Jung/Perfect Blue/05 Love of My Life.mp3":{
-  "tempo":-1,"timing":-1,"sections":[
-    {"start":"00:00","stop":"end","labels":["acoustic_guitar"]}
-  ]
-},
-"Sungha Jung/Perfect Blue/06 Fields of Gold.mp3":{
-  "tempo":-1,"timing":-1,"sections":[
-    {"start":"00:00","stop":"end","labels":["acoustic_guitar"]}
-  ]
-},
-"Sungha Jung/Perfect Blue/07 Superstition.mp3":{
-  "tempo":-1,"timing":-1,"sections":[
-    {"start":"00:00","stop":"end","labels":["acoustic_guitar"]}
-  ]
-},
-"Sungha Jung/Perfect Blue/08 Perfect Blue.mp3":{
-  "tempo":-1,"timing":-1,"sections":[
-    {"start":"00:00","stop":"end","labels":["acoustic_guitar"]}
+    {"start":"00:00","stop":"00:17","labels":["electric_guitar", "acoustic_guitar", "drums", "electric_bass"]},
+    {"start":"00:17","stop":"00:47","labels":["electric_guitar", "acoustic_guitar", "drums", "electric_bass", "vocals"]},
+    {"start":"00:47","stop":"00:58","labels":["electric_guitar", "acoustic_guitar", "drums", "electric_bass", "vocals", "piano"]}
   ]
 },
 "Josh Groban/Closer/05 When You Say You Love Me.mp3":{
@@ -98,16 +48,6 @@
     {"start":"00:42","stop":"01:00","labels":["piano", "vocals", "acoustic_guitar"]},
     {"start":"01:00","stop":"01:23","labels":["piano", "vocals"]}
 
-  ]
-},
-"Nickel Creek/Nickel Creek/01 Ode To a Butterfly.mp3":{
-  "tempo":-1,"timing":-1,"sections":[
-    {"start":"00:00","stop":"00:21","labels":["banjo"]},
-    {"start":"00:23","stop":"00:30:","labels":["mandolin"]},
-    {"start":"00:30","stop":"00:39:","labels":["mandolin", "violin"]},
-    {"start":"00:39","stop":"01:05:","labels":["mandolin", "violin", "acoustic_guitar"]},
-    {"start":"00:39","stop":"00:39:","labels":["mandolin", "violin", "acoustic_guitar"]},
-    {"start":"01:06","stop":"01:22:","labels":["acoustic_guitar"]}
   ]
 }
 

@@ -1,11 +1,4 @@
 {
-"Mat Kearney/City Of Black & White/01 All I Have.mp3":{
-  "tempo":-1,"timing":-1,"sections":[
-    {"start":"00:00","stop":"00:17","labels":["electric_guitar", "acoustic_guitar", "drums", "electric_bass"]},
-    {"start":"00:17","stop":"00:47","labels":["electric_guitar", "acoustic_guitar", "drums", "electric_bass", "vocals"]},
-    {"start":"00:47","stop":"00:58","labels":["electric_guitar", "acoustic_guitar", "drums", "electric_bass", "vocals", "piano"]}
-  ]
-},
 "Mat Kearney/City Of Black & White/02 Fire & Rain.mp3":{
   "tempo":-1,"timing":-1,"sections":[
     {"start":"00:00","stop":"00:17","labels":["electric_guitar", "acoustic_guitar", "drums", "electric_bass"]},
@@ -13,27 +6,17 @@
     {"start":"00:47","stop":"00:58","labels":["electric_guitar", "acoustic_guitar", "drums", "electric_bass", "vocals", "piano"]}
   ]
 },
-"Sungha Jung/Perfect Blue/13 Twist In My Sobriety.mp3":{
+"The Piano Guys/00 More Than Words.mp3":{
   "tempo":-1,"timing":-1,"sections":[
-    {"start":"00:00","stop":"end","labels":["acoustic_guitar"]}
+    {"start":"00:00","stop":"00:10","labels":["piano"]},
+    {"start":"00:10","stop":"02:15","labels":["piano", "cello"]},
+    {"start":"02:17","stop":"02:31","labels":["piano"]},
+    {"start":"02:31","stop":"03:51","labels":["piano", "cello"]}
   ]
 },
-"Sungha Jung/Perfect Blue/14 I Believe I Can Fly.mp3":{
+"Sungha Jung/Perfect Blue/02 Billie Jean.mp3":{
   "tempo":-1,"timing":-1,"sections":[
     {"start":"00:00","stop":"end","labels":["acoustic_guitar"]}
-  ]
-},
-"The Piano Guys/The Piano Guys/07 Arwen's Vigil.mp3":{
-  "tempo":-1,"timing":-1,"sections":[
-    {"start":"00:00","stop":"00:27","labels":["piano", "cello"]},
-    {"start":"00:27","stop":"00:41","labels":["piano"]},
-    {"start":"00:41","stop":"01:13","labels":["piano", "cello"]},
-    {"start":"01:13","stop":"01:18","labels":["piano"]},
-    {"start":"01:18","stop":"01:54","labels":["piano", "cello"]},
-    {"start":"01:54","stop":"02:35","labels":["piano", "cello", "drums"]},
-    {"start":"02:35","stop":"02:50","labels":["piano", "cello"]},
-    {"start":"02:50","stop":"01:54","labels":["piano", "cello"]},
-    {"start":"03:28","stop":"3:45","labels":["piano", "cello"]}
   ]
 },
 "Josh Groban/Closer/08 Broken Vow.mp3":{
@@ -47,6 +30,5 @@
     {"start":"03:03","stop":"03:57","labels":["piano","vocals", "violin","cello"]},
     {"start":"03:57","stop":"03:59","labels":["vocals"]}
   ]
-
 }
 }

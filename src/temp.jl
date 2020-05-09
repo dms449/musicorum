@@ -5,7 +5,9 @@ plotly()
 
 #include("functions.jl")
 #include("data_sets.jl")
-sn1 = raw"/home/dms449/Music/Nickel Creek/Nickel Creek/04 In the House of Tom Bombadil.mp3"
+bluegrass_song = raw"/home/dms449/Music/Nickel Creek/Nickel Creek/04 In the House of Tom Bombadil.mp3"
+josh_groban_song = raw"/home/dms449/Music/Josh Groban/Closer/08 Broken Vow.mp3"
+piano_guys_song = raw"/home/dms449/Music/The Piano Guys/00 More Than Words.mp3"
 
 
 function multiple_views(;w=22000, h=11000, threshold=10000)
@@ -23,14 +25,13 @@ function multiple_views(;w=22000, h=11000, threshold=10000)
 end
 
 function spect()
-  song1 = MP3.load(sn1)
+  song1 = MP3.load(bluegrass_song)
   section = song1[44100:88200,1]
 
   sp = spectrogram(section, div(size(section,1),64), fs=44100)
   stft1 = stft(section, div(size(section,1),64) fs=44100)
   p0 = heatmap(sp.time, sp.freq, sp.power, title="power")
   p1 = heatmap(sp.time, sp.freq, angle.(stft1), title="phase")
-  p2 = heatmap(sp.time, sp.freq, abs2.(stft1), title="abs")
   l = @layout [a b c]
   plot(p0, p1, p2, layout=l, size=(1500, 700))
 end
