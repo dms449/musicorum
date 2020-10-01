@@ -14,10 +14,10 @@ include("utils.jl")
 # TODO: 
 
 
-string_instruments = ["acoustic_guitar", "electric_guitar", "acoustic_bass", "electric_bass", "mandolin", "banjo", "violin", "cello"]
+string_instruments = ["acoustic_guitar", "electric_guitar", "bass", "mandolin", "banjo", "violin", "cello"]
 string_playing_styles = ["strumming", "picking"]
 brass_instruments = ["trumpet"]
-woodwind_instruments = ["flute", "whistle"]
+woodwind_instruments = ["flute", "low_whistle", "penny_whistle"]
 percussion_instruments = ["drums"]
 keyboard = ["piano"]
 other_instruments = ["vocals"]
@@ -68,7 +68,7 @@ end
 """
 get_data(truth_file, shuffled_keys, num_files, partition_size::Int=2*fs, partition_stride::Int=2*fs, stft_size=1376, stft_stride=div(stft_size,2))
 
-Get 'num_files' from truth_file by pulling from the Stateful iterator, 'shuffled_keys'.
+Get 'num_files' from truth_file by pulling from the Stateful iterator, 'shuffled_keys'. 
 
 """
 function get_data(truth_file, shuffled_keys, num_files, partition_size::Int=2*fs, partition_stride::Int=2*fs, stft_size=1376, stft_stride=div(stft_size,2))
@@ -80,7 +80,7 @@ function get_data(truth_file, shuffled_keys, num_files, partition_size::Int=2*fs
   futures = Vector{Task}(undef, num_files > length(shuffled_keys) ? length(shuffled_keys) : num_files)
   for (i, key) in enumerate(take(shuffled_keys, num_files))
     @debug "loading $(split(key, "/")[end])"
-    futures[i] = @spawn load_sections(key, truth_file[key]["sections"], partition_size, partition_stride, stft_size, stft_stride)
+    futures[i] = @spawn stft_sections(key, truth_file[key]["sections"], partition_size, partition_stride, stft_size, stft_stride)
   end
 
   # fetch the values from the futures and append them
@@ -90,55 +90,40 @@ function get_data(truth_file, shuffled_keys, num_files, partition_size::Int=2*fs
     append!(labels, l)
   end
 
-  # separate phase and magnitude into separate channels
-  data = map(x->cat(abs2.(x), angle.(x), dims=4), data)
-  
   return (shuffle ∘ collect ∘ zip)(data, labels)
 end
 
 """
-
+partition up and calculate the stft of specific sections of a song
 """
-function load_sections(filename::String, sections, partition_size::Int=2*fs, partition_stride::Int=2*fs, stft_size=1376, stft_stride=div(stft_size,2))
-  song = nothing
+function stft_sections(filename::String, sections, partition_size::Int=2*fs, partition_stride::Int=2*fs, stft_size=1376, stft_stride=div(stft_size,2))
+  song = read_audio(filename)
+  if (song != nothing)
+    data = []
+    labels = []
 
-  if endswith(filename, "mp3")
-    song = MP3.load(joinpath(data_path_root, filename))
-  elseif endswith(filename, "wav") 
-    song, _1, _2, _3 = WAV.wavread(joinpath(data_path_root, filename))
-  else
-    @warn "$(split(filename, "/")[end]) is not of valid format=(.mp3 | .wav). skipping file."
-    return
+    # parse the song into its respective components
+    for s in sections
+      slice = song_slice(song, s["start"], s["stop"]) 
+      l = build_truth_vector(s["labels"])
+      temp = collect(partition(slice[:,1], partition_size, partition_stride))
+      append!(data, stft.(temp, stft_size, stft_stride, fs=fs))
+      append!(labels, fill(l, (size(temp)[1], 1)))
+    end
   end
-  # convert to 1d array of type Float32
-  song = convert(Array{Float32,1}, song[:,1])
-
-  # parse the song into its respective components
-  for s in sections
-    slice = song_slice(song, s["start"], s["stop"]) 
-    l = build_truth_vector(s["labels"])
-    temp = collect(partition(slice[:,1], partition_size, partition_stride))
-    return stft.(temp, stft_size, stft_stride, fs=fs), fill(l, (size(temp)[1], 1))
-  end
+  return data, labels
 end
 
 
 
 """
-load a 
+partition up and calculate the stft of an entire song
 """
-function load_song(filename::String, partition_size=2*fs, partition_stride=2*fs,  stft_size=1376, stft_stride=div(stft_size,2))
-  song = nothing
-  if endswith(filename, "mp3")
-    song = MP3.load(joinpath(data_path_root, filename))
-  elseif endswith(filename, "wav")
-    song, _1, _2, _3 = WAV.wavread(joinpath(data_path_root, filename))
-  else
-    @warn "$(split(filename, "/")[end]) is not of valid format=(.mp3 | .wav). skipping file."
-    return
+function stft_entire_song(filename::String, partition_size=2*fs, partition_stride=2*fs,  stft_size=1376, stft_stride=div(stft_size,2))
+  song = read_audio(filename)
+  if (song != nothing)
+    return stft.(collect(partition(song[:,1], partition_size, partition_stride)), stft_size, stft_stride, fs=fs)
   end
-
-  return stft.(collect(partition(song[:,1], partition_size, partition_stride)), stft_size, stft_stride, fs=fs)
 end
 
 """
@@ -151,7 +136,7 @@ end
 """
 TODO: currently assumes the Time objects are even seconds
 """
-function song_slice(song, start::Time, stop::Time; fs=44100)
+function song_slice(song::Array, start::Time, stop::Time; fs=44100)
   t1 = Int(fs*Dates.value(start)/1e9)+1
   t2 = Int(fs*Dates.value(stop)/1e9)
   if t2>length(song) 
@@ -164,10 +149,37 @@ end
 """
 TODO: currently assumes the Time objects are even seconds
 """
-function song_slice(song, start::String, stop::String; fs=44100)
+function song_slice(song::Array, start::String, stop::String; fs=44100)
   t1 = Time(start, "MM:SS")
   t2 = stop=="end" ? Time(0, floor(size(song,1)/fs/60), floor(size(song,1)/fs % 60)) : Time(stop, "MM:SS") 
   return song_slice(song, t1, t2, fs=fs)
+end
+
+"""
+Get the slice from the song
+"""
+function song_slice(song::String, start::String, stop::String; fs=44100)
+  song = read_audio(song)
+  if (song != nothing)
+    return song_slice(song, start, stop, fs=fs)
+  end
+end
+
+"""
+open an audio file and load the data
+"""
+function read_audio(filename::String)
+  song = nothing
+  if endswith(filename, "mp3")
+    song = MP3.load(joinpath(data_path_root, filename))
+  elseif endswith(filename, "wav")
+    song, _1, _2, _3 = WAV.wavread(joinpath(data_path_root, filename))
+  else
+    @warn "$(split(filename, "/")[end]) is not of valid format=(.mp3 | .wav). skipping file."
+  end
+
+  song = convert(Array{Float32,1}, song[:,1])
+  return song
 end
 
 

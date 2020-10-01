@@ -1,3 +1,4 @@
 *.wav
 *.mp3
-data/*.bson
+*.bson
+*.toml

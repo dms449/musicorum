@@ -2,6 +2,7 @@ using Plots
 using DSP: Periodograms.stft, Periodograms.spectrogram
 using MP3
 plotly()
+#pyplot()
 
 #include("functions.jl")
 #include("data_sets.jl")
@@ -24,16 +25,29 @@ function multiple_views(;w=22000, h=11000, threshold=10000)
     
 end
 
-function spect()
-  song1 = MP3.load(bluegrass_song)
+function spect(s::String=bluegrass_song)
+  song1 = MP3.load(s)
   section = song1[44100:88200,1]
 
-  sp = spectrogram(section, div(size(section,1),64), fs=44100)
-  stft1 = stft(section, div(size(section,1),64) fs=44100)
-  p0 = heatmap(sp.time, sp.freq, sp.power, title="power")
-  p1 = heatmap(sp.time, sp.freq, angle.(stft1), title="phase")
-  l = @layout [a b c]
-  plot(p0, p1, p2, layout=l, size=(1500, 700))
+  divs = [32, 64, 128]
+  l = @layout [a b ; c d ; e f]
+  plots = []
+
+  for d in divs
+    sp = spectrogram(section, div(size(section,1),d), fs=44100)
+    cmplx = stft(section, div(size(section,1),d), fs=44100)
+
+    p0 = heatmap(sp.time, sp.freq, abs2.(cmplx), title="power")
+
+    #th = maximum(abs.(cmplx))/1000
+    #cmplx[abs.(cmplx) .<= th] .= 0
+   
+    p1 = heatmap(sp.time, sp.freq, angle.(cmplx), title="phase")
+    push!(plots, p0, p1)
+
+  end
+  plot(plots..., layout=l, size=(1500, 700))
+
 end
 
 #threshold = 10000

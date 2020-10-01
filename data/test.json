@@ -1,9 +1,9 @@
 {
 "Mat Kearney/City Of Black & White/02 Fire & Rain.mp3":{
   "tempo":-1,"timing":-1,"sections":[
-    {"start":"00:00","stop":"00:17","labels":["electric_guitar", "acoustic_guitar", "drums", "electric_bass"]},
-    {"start":"00:17","stop":"00:47","labels":["electric_guitar", "acoustic_guitar", "drums", "electric_bass", "vocals"]},
-    {"start":"00:47","stop":"00:58","labels":["electric_guitar", "acoustic_guitar", "drums", "electric_bass", "vocals", "piano"]}
+    {"start":"00:00","stop":"00:17","labels":["electric_guitar", "acoustic_guitar", "drums", "bass"]},
+    {"start":"00:17","stop":"00:47","labels":["electric_guitar", "acoustic_guitar", "drums", "bass", "vocals"]},
+    {"start":"00:47","stop":"00:58","labels":["electric_guitar", "acoustic_guitar", "drums", "bass", "vocals", "piano"]}
   ]
 },
 "The Piano Guys/00 More Than Words.mp3":{
