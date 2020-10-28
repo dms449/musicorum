@@ -1,3 +1,4 @@
+
 """
 get the output dimensions of a short-time-forier transform on an input vector 
 of length `dlen` with window length `wlen` and stride of `stride`
@@ -11,4 +12,8 @@ function partition(x, wlen::Int, stride::Int=1)
   return ((@view x[i:i+wlen-1]) for i in 1:stride:length(x)-wlen+1)
 end
 
+function make_dyadic(x::AbstractArray)
+  ind = Int(2^floor(log2(length(x))))
+  return x[1:ind]
+end
 

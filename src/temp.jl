@@ -1,11 +1,12 @@
+include("data.jl")
+include("utils.jl")
 using Plots
-using DSP: Periodograms.stft, Periodograms.spectrogram
-using MP3
+using LinearAlgebra: normalize
+using DSP
+using DSP: conv
 plotly()
-#pyplot()
+theme(:dark)
 
-#include("functions.jl")
-#include("data_sets.jl")
 bluegrass_song = raw"/home/dms449/Music/Nickel Creek/Nickel Creek/04 In the House of Tom Bombadil.mp3"
 josh_groban_song = raw"/home/dms449/Music/Josh Groban/Closer/08 Broken Vow.mp3"
 piano_guys_song = raw"/home/dms449/Music/The Piano Guys/00 More Than Words.mp3"
@@ -87,4 +88,63 @@ end
 #
 ##plot(p1, p2, p3, p4, p5, p6, layout=(3,2), size=(1500, 900))
 #plot(p5, p6, layout=(2,1), size=(1500, 900))
-#
+
+"""
+"""
+function prep_spect(sp::Periodograms.Spectrogram)
+  ind = Int(ceil(15000/sp.freq[2]))
+  return normalize(log10.(sp.power[1:ind+1,:])), sp.time, sp.freq[1:ind+1]
+end
+
+function run(slice)
+  z, time, freq = prep_spect(spectrogram(slice, 2^11, fs=44100))
+  p1 = heatmap(time, freq, z, title="power", c=:jet)
+  #p2 = plot(sum(z, dims=1)')
+  
+  k1 = [
+       -1 0 1
+       -2 0 2
+       -1 0 1
+      ]
+  k2 = [
+       -1 -1 -1 -1 -1 -1
+       -1 2 1 1 1 1
+       -1 2 3 3 2 2
+       -1 2 1 1 1 1
+       -1 -1 -1 -1 -1 -1
+      ]
+  zz = conv(z, k1)
+  (i, j) = size(zz)
+  p2 = heatmap(zz[4:i-4,5:j-5], c=:jet)
+
+
+  plot(p1,p2, layout=(2,1), size=(1400, 1000))
+
+end
+
+
+function compare(slices...)
+  myplots = []
+  for slice in slices
+    p1 = plot(slice, title="time")
+
+    sp = spectrogram(slice, 2^11, fs=44100)
+    p2 = heatmap(sp.time, sp.freq, log10.(sp.power), title="power", c=:jet)
+    #cmplx = stft(slice, 2^11, fs=44100)
+    #p3 = heatmap(sp.time, sp.freq, angle.(cmplx), title="phase")
+
+    push!(myplots, p1, p2)
+  end
+
+  plot(myplots..., layout = (length(slices),2), size=(1400, 1000))
+
+end
+
+song1 = "Josh Groban/Closer/08 Broken Vow.mp3"
+slice1 = make_dyadic(song_slice(song1, "00:13","00:22"))
+
+song2 = "Nickel Creek/Nickel Creek/04 In the House of Tom Bombadil.mp3"
+slice2 = make_dyadic(song_slice(song2, "00:01","00:09"));
+
+song3 = "IRMAS-Sample/Testing/12 What'll I Do - Bud Shank And Bob-4.wav"
+slice3 = song_slice(song3, "00:00", "00:05")

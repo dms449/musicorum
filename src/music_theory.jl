@@ -134,6 +134,8 @@ function accidental(note::Note)
   return length(s) == 3 ? s[2] : '♮'
 end
 
+function is
+
 
 """
 
