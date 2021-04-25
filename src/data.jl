@@ -6,27 +6,15 @@ using Random: shuffle!, shuffle
 using Flux: onehot, onecold, onehotbatch
 import MP3
 import WAV
+using LinearAlgebra
 using DSP: Periodograms.stft, Periodograms.spectrogram
 include("utils.jl")
+include("instruments.jl")
 
 # TODO: fix hard coded base path
 # TODO: currently assuming all songs are sampled at 44100Hz
 # TODO: 
 
-
-string_instruments = ["acoustic_guitar", "electric_guitar", "bass", "mandolin", "banjo", "violin", "cello"]
-string_playing_styles = ["strumming", "picking"]
-brass_instruments = ["trumpet"]
-woodwind_instruments = ["flute", "low_whistle", "penny_whistle"]
-percussion_instruments = ["drums"]
-keyboard = ["piano"]
-other_instruments = ["vocals"]
-instruments = vcat(string_instruments, brass_instruments, woodwind_instruments, percussion_instruments, keyboard, other_instruments)
-
-basic_families = ["percussion_instruments"=>percussion_instruments, "woodwind_instruments"=>woodwind_instruments, "brass_instruments"=>brass_instruments, "string_instruments"=>string_instruments, "keyboard"=>keyboard, "other_instruments"=>other_instruments]
-#hornbostel_sachs = ["Idiophone"]
-
-#instruments = ["guitar", "vocals", "piano", "cello"]
 global data_path_root = "/home/dms449/Music"
 global all_training = "data/train.json"
 global fs = 44100
@@ -93,6 +81,34 @@ function get_data(truth_file, shuffled_keys, num_files, partition_size::Int=2*fs
   return (shuffle ∘ collect ∘ zip)(data, labels)
 end
 
+function load_dataset(d, params::Dict)
+  data = []
+  labels = []
+
+  songs = keys(d)
+
+  # load each song
+  futures = Vector{Task}(undef, length(songs))
+  for (i, song_name) in enumerate(songs)
+    @debug "loading $(split(song_name, "/")[end])"
+
+    if params["method"] == "stft"
+      futures[i] = @spawn stft_sections(song_name, d[song_name]["sections"], params["partition_size"], params["partition_stride"], params["stft_size"], params["stft_stride"])
+    else 
+      @info "data loading method `$(params["method"])` not recognized"
+    end
+  end
+
+  # fetch the values from the futures and append them
+  for f in futures
+    (d,l) = fetch(f)
+    append!(data, d)
+    append!(labels, l)
+  end
+  
+  return data, labels
+end
+
 """
 partition up and calculate the stft of specific sections of a song
 """
@@ -107,8 +123,27 @@ function stft_sections(filename::String, sections, partition_size::Int=2*fs, par
       slice = song_slice(song, s["start"], s["stop"]) 
       l = build_truth_vector(s["labels"])
       temp = collect(partition(slice[:,1], partition_size, partition_stride))
-      append!(data, stft.(temp, stft_size, stft_stride, fs=fs))
+
+      # get the spectrogram instead of the stft
+      #println("size temp = $(size(temp))   typeof = $(typeof(temp))")
+      for t in temp
+        sp = spectrogram(t, stft_size, stft_stride, fs=fs)
+
+        # get the index at 15kHz and ignore everything higher than that.
+        ind = Int(ceil(15000/sp.freq[2]))
+        #println("$(typeof(sp.power[1:ind+1,:]))")
+        
+        preprocess(x) = reshape(LinearAlgebra.normalize(x), (size(x)..., 1, 1))
+        append!(data, (preprocess(sp.power[1:ind+1,:]),))
+        #append!(data, sp.power[1:ind+1,:])
+        
+
+        #break
+      end
+      
+      #append!(data, stft.(temp, stft_size, stft_stride, fs=fs))
       append!(labels, fill(l, (size(temp)[1], 1)))
+      #break
     end
   end
   return data, labels
@@ -130,7 +165,7 @@ end
 
 """
 function build_truth_vector(input)
-  return sum(collect(onehotbatch(input, instruments)),dims=2)
+  return convert(Array{Float32,2}, sum(collect(onehotbatch(input, instruments)),dims=2))
 end
 
 """

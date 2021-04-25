@@ -123,28 +123,41 @@ function run(slice)
 end
 
 
-function compare(slices...)
+function compare(slices...; plot_types::AbstractArray{Symbol,1}=[:time, :spect], titles::AbstractArray{String,1}=[])
   myplots = []
-  for slice in slices
-    p1 = plot(slice, title="time")
+  for (ind, slice) in enumerate(slices)
+    z, time, freq = prep_spect(spectrogram(slice, 2^11, fs=44100))
 
-    sp = spectrogram(slice, 2^11, fs=44100)
-    p2 = heatmap(sp.time, sp.freq, log10.(sp.power), title="power", c=:jet)
-    #cmplx = stft(slice, 2^11, fs=44100)
-    #p3 = heatmap(sp.time, sp.freq, angle.(cmplx), title="phase")
+    name = length(titles) >= ind ? titles[ind] : ""
 
-    push!(myplots, p1, p2)
+    for s in plot_types
+      if :time in plot_types
+        p = plot(z, title="time")
+        push!(myplots, p)
+      end
+
+      if :spect in plot_types
+        p = heatmap(time, freq, z, title=name, c=:jet)
+        push!(myplots, p)
+      end
+    end
   end
 
-  plot(myplots..., layout = (length(slices),2), size=(1400, 1000))
-
+  plot(myplots..., layout = (length(slices),length(plot_types)), size=(1400, 1000))
 end
 
 song1 = "Josh Groban/Closer/08 Broken Vow.mp3"
 slice1 = make_dyadic(song_slice(song1, "00:13","00:22"))
 
 song2 = "Nickel Creek/Nickel Creek/04 In the House of Tom Bombadil.mp3"
-slice2 = make_dyadic(song_slice(song2, "00:01","00:09"));
+slice2 = make_dyadic(song_slice(song2, "00:01","00:09"))
 
-song3 = "IRMAS-Sample/Testing/12 What'll I Do - Bud Shank And Bob-4.wav"
-slice3 = song_slice(song3, "00:00", "00:05")
+flute = "IRMAS-Sample/Testing/12 What'll I Do - Bud Shank And Bob-4.wav"
+flute_s = song_slice(flute, "00:01", "00:03")
+
+violin = "IRMAS-Sample/Training/vio/001__[vio][nod][cou_fol]2194__1.wav"
+violin_s = song_slice(violin, "00:00", "end")
+
+sax = "IRMAS-Sample/Training/sax/118__[sax][nod][jaz_blu]1702__3.wav"
+sax_s = song_slice(sax, "00:00", "end")
+

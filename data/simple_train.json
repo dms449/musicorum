@@ -1,0 +1,14 @@
+{
+"The Piano Guys/Where Are You Christmas - Sing/01 Where Are You Christmas.mp3":{
+  "tempo":-1,"timing":-1,"sections":[
+    {"start":"00:00","stop":"00:35","labels":["piano"]},
+    {"start":"00:35","stop":"02:19","labels":["piano", "cello"]},
+    {"start":"02:19","stop":"02:31","labels":["piano"]},
+    {"start":"02:31","stop":"02:51","labels":["piano", "vocals"]},
+    {"start":"02:51","stop":"03:11","labels":["piano", "cello","vocals"]},
+    {"start":"03:11","stop":"03:21","labels":["piano", "vocals"]},
+    {"start":"03:21","stop":"03:31","labels":["piano"]}
+  ]
+}
+
+}
