@@ -1,4 +1,7 @@
 using Plots
+using BSON: @load
+using Flux: Data.DataLoader
+using CUDA
 plotly()
 theme(:dark)
 
@@ -7,33 +10,58 @@ include("utils.jl")
 include("model.jl")
 
 
-function evaluate(model, dataloader)
-  y_out = []
-  l = 0f0
-  acc = 0
-  for (x,y) in dataloader
-    ŷ = model.(x)
-    l += sum(loss.(ŷ, y))
-    acc += sum(accuracy.(ŷ, y))
-    append!(y_out, )
+
+function evaluate_dataloader(model, dataloader)
+
+
+  if dataloader.shuffle
+    @warn "dataloader has `shuffle=true` which may not be desired for evaluation"
   end
 
-  return l/length(dataloader), acc/length(dataloader), y_out
-end
+  y, ŷ = [], []
 
-function plot(test_dataset, model, params)
+  for (x, y_) in dataloader
+    append!(ŷ, cpu(model.(x)))
+    append!(y, cpu(y_))
+  end
 
-  test_loader = DataLoader(load_dataset(test_dataset, params["p_size"], params["p_stride"], params["stft_size"], params["stft_stride"]) |> gpu, batchsize=16, shuffle=true)
-  loss, accuracy, ŷ = evaluate(model, test_loader)
+  truth = vcat(y'...)
+  answers = vcat(ŷ'...)
 
+
+  # answers = Array{Float32, 2}(undef, length(song_data), length(instruments))
+  # for (i, each) in enumerate(song_data)
+  #   answers[i, :] = model(each)
+  # end
+
+  instrument_labels = reshape(instruments, (1,length(instruments)))
+
+  #TODO: change display labels to only be those plotted
+  # only include instruments which have been determined to be present at some point in the song
+  a = mean(answers, dims=1)
+  ans_col_to_keep = [i for (i, each) in enumerate(a.>0.1) if each==1]
+  answers = answers[:, ans_col_to_keep]
+  ans_labels = instrument_labels[ans_col_to_keep] |> x->reshape(x, (1,length(x)))
+
+
+  t = sum(truth, dims=1)
+  truth_col_to_keep = [i for (i, each) in enumerate(t.>1) if each==1]
+  truth = truth[:, truth_col_to_keep]
+  truth_labels = instrument_labels[truth_col_to_keep] |> x->reshape(x, (1,length(x)))
+
+
+  #plot(cat(answers,truth_plot), linetype=:stppre, labels=instrument_labels, title="$(splitpath(songpath)[end])")
+  #plot(answers, linetype=:steppre, labels=ans_labels, title="answers")
+  #return plot(truth, linetype=:steppre, label=truth_labels, title="truth")
+  ans_plot = plot(answers, linetype=:steppre, labels=ans_labels, title="answers")
+  truth_plot = plot(truth, linetype=:steppre, labels=truth_labels, title="truth")
+  l = @layout [a ; b]
+  return plot(ans_plot, truth_plot, layout=l, size=(1200,800))
   
 end
 
-function run()
-  dataset = dataset("data/test.json")
-  params = Dict("p_size"=>)
-  model, data_params = @load "latest_conv.bson"
-end
+
+
 
 # Run
 # ---

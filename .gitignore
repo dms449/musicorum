@@ -4,3 +4,4 @@
 *.toml
 
 **/*.bson
+experiments/*

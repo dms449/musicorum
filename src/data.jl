@@ -32,7 +32,7 @@ exclude the instruments in subsets.
 
 filter_type ∈  [:include, :exclude]
 """
-function dataset(filepath::String ; subset=[], filter_type::Symbol=:include)
+function dataset_file(filepath::String ; subset=[], filter_type::Symbol=:include)
   dataset = JSON.parse(read(filepath, String))
   if (!isempty(subset))
     if (filter_type == :include)

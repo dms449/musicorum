@@ -42,7 +42,7 @@ end
 
 """ 
 """
-function train!(model=build_model(), train_dataset=dataset("data/simple_train.json"), test_dataset=dataset("data/simple_test.json"), data_params::Dict=default_data_params; epochs::Int=10, output_file="models/simple_conv.bson")
+function train!(model=build_model(), train_dataset=dataset_file("data/simple_train.json"), test_dataset=dataset_file("data/simple_test.json"), data_params::Dict=default_data_params; epochs::Int=10, output_file="models/simple_conv.bson")
   if has_cuda()		# Check if CUDA is available
       @info "CUDA is on"
       CUDA.allowscalar(false)
@@ -73,6 +73,7 @@ function train!(model=build_model(), train_dataset=dataset("data/simple_train.js
 
    end
 
+   model = cpu(model)
    @save output_file model losses accuracies
 
 end
@@ -80,39 +81,7 @@ end
 function view_model(model_path)
   @load model_path model losses accuracies
 
-  plot(1:length(losses),hcat(losses, accuracies), labels=["loss", "accuracy"], xlabel="epochs")
+  plot(1:length(losses),hcat(losses, accuracies), labels=["loss" "accuracy"], xlabel="epochs", size=(1200, 800))
 
 end
-
-function run()
-  s = ArgParseSettings()
-
-  @add_arg_table! s begin
-      "--epochs", "-e" 
-          help = "number of epochs to train on"
-          arg_type = Int
-          default = 10
-      "--save_as", "-s"
-          help = "name for the model file"
-          arg_type = String
-          default = "model/latest_model.bson"
-    end
-
-  parsed_args = parse_args(s)
-
-  model = build_model()
-  training_data = dataset("data/train.json")
-  testing_data = dataset("data/test.json")
-
-  train!(model, training_data, testing_data, epochs=parsed_args["epochs"], model_path=parsed_args["save_as"])
-end
-
-# Run
-# ---
-
-
-
-
-
-          
 
